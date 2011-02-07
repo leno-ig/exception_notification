@@ -1,31 +1,28 @@
 require 'action_dispatch'
-require 'exception_notifier/notifier'
 
 class ExceptionNotifier
-  def self.default_ignore_exceptions
-    [].tap do |exceptions|
-      exceptions << ActiveRecord::RecordNotFound if defined? ActiveRecord
-      exceptions << AbstractController::ActionNotFound if defined? AbstractController
-      exceptions << ActionController::RoutingError if defined? ActionController
-    end
-  end
-
-  def initialize(app, options = {})
-    @app, @options = app, options
-    @options[:ignore_exceptions] ||= self.class.default_ignore_exceptions
+  def initialize(app, name = nil)
+    @app = app
+    @config = YAML.load_file(File.dirname(__FILE__)+"/../config/notifier.yml")
   end
 
   def call(env)
-    @app.call(env)
-  rescue Exception => exception
-    options = (env['exception_notifier.options'] ||= {})
-    options.reverse_merge!(@options)
-
-    unless Array.wrap(options[:ignore_exceptions]).include?(exception.class)
-      Notifier.exception_notification(env, exception).deliver
-      env['exception_notifier.delivered'] = true
+    begin
+      @app.call(env)
+    rescue Exception => exception
+      unless ignore_exception?(exception)
+        Notifier.exception_notification(env, exception).deliver
+        env['exception_notifier.delivered'] = true
+      end
+  
+      raise exception
     end
-
-    raise exception
+  end
+  
+  def ignore_exception?(e)
+    return true if @config[Rails.env]["ignore_exceptions"] == "all"
+    (@config[Rails.env]["ignore_exceptions"] || 
+    @config["default"]["ignore_exceptions"]).
+    include?(e.class.to_s)
   end
 end
