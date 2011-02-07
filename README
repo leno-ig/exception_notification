@@ -11,14 +11,23 @@ application. The plugin is configurable, allowing programmers to specify:
 The email includes information about the current request, session, and
 environment, and also gives a backtrace of the exception.
 
+== Install
+
+rails plugin install git@github.com:leno-ig/exception_notification.git
+
 == Usage
 
 As of Rails 3 ExceptionNotifier is used as a rack middleware
+make file
+  config/initializers/exception_notifier.rb
 
-  Whatever::Application.config.middleware.use ExceptionNotifier,
-    :email_prefix => "[Whatever] ",
-    :sender_address => %{"notifier" <notifier@example.com>},
-    :exception_recipients => %w{exceptions@example.com}
+type
+  Whatever::Application.config.middleware.use ExceptionNotifier
+
+== Config
+
+Edit plugins/exception_notifier/config/notifier.yml
+
 
 == Customization
 

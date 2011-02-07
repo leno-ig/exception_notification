@@ -1,0 +1,26 @@
+default: 
+  email_prefix: "[ERROR] "
+  sender_address: 'Exception Notifier <exception.notifier@sample.com>'
+  exception_recipients: 
+    - exception.notifier@sample.com
+  sections: 
+    - request
+    - session
+    - environment
+    - backtrace
+  ignore_exceptions:
+    - ActionController::RoutingError
+    - AbstractController::ActionNotFound
+    - ActiveRecord::RecordNotFound
+    - ActionController::InvalidAuthenticityToken
+
+development:
+  ignore_exceptions: all
+
+production:
+  sender_address: ''
+  exception_recipients: 
+    - ''
+
+test:
+  ignore_exceptions: all
